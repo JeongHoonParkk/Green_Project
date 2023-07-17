@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lgy.ShoppingMall.dao.SDao">
+	
+<!-- 	리뷰목록 -->
+    <select id="revList" resultType="com.lgy.ShoppingMall.dto.PRevDto">
+<!--     	select revcode, revtitle, id, revdate, revhit from product_rev order by revcode desc -->
+    	select revcode, revtitle, revdate, revhit from product_rev order by revcode desc
+    </select>
+<!--     리뷰작성[상품코드는 나중에 수정] -->
+    <insert id="revWrite" parameterType="hashmap">
+<!--     	INSERT INTO PRODUCT_REV(REVCODE, REVTITLE, REVCONT, REVAUTH, REVHIT)  -->
+<!-- 		VALUES (PRODUCT_REV_SEQ.NEXTVAL, #{REVTITLE}, #{REVCONT}, #{REVAUTH}, 0) -->
+<!-- 		insert into product_rev(revcode, procode, revtitle, revcont, revauth, revdate, revhit)  -->
+<!-- 		values (product_rev_seq.nextval, #{procode}, #{revtitle}, #{revcont}, #{revauth}, SYSDATE, 0) -->
+<!-- 		230621 회원 id 임시로 넣음 -->
+<!-- 		insert into product_rev(revcode, procode, id, revtitle, revcont, revauth, revdate, revhit)  -->
+<!-- 		values (product_rev_seq.nextval, #{procode}, #{id}, #{revtitle}, #{revcont}, #{revauth}, SYSDATE, 0) -->
+		insert into product_rev(revcode, procode, id, revtitle, revcont, revdate, revhit) 
+		values (product_rev_seq.nextval, #{procode}, #{id}, #{revtitle}, #{revcont}, SYSDATE, 0)
+    </insert>
+<!--     리뷰 조회수 증가 임시 -->
+    <update id="revUpHit" parameterType="hashmap">
+    	<![CDATA[
+    		update product_rev set revhit = revhit+1 where revcode=#{revcode}
+    	]]>
+    </update>
+<!--     조회수 -1(댓작성 후 조회수 안올라가게 임시로 함) -->
+    <update id="revDownHit" parameterType="hashmap">
+    	<![CDATA[
+    		update product_rev set revhit = revhit-1 where revcode=#{revcode}
+    	]]>
+    </update>
+<!--     리뷰내용 조회 -->
+    <select id="revContentView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.PRevDto">
+<!--     	select revcode, revtitle, revcont, revauth, revdate, revhit from product_rev where revcode=#{revcode} -->
+    	select revcode, revtitle, revcont, id, revdate, revhit from product_rev where revcode=#{revcode}
+    </select>
+<!--     리뷰수정(원본조회) 23.06.23 -->
+<!--     <select id="revModifyView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.PRevDto"> -->
+<!--     	select revcode, revtitle, revcont from product_rev where revcode=#{revcode} -->
+<!--     </select> -->
+<!--     리뷰수정 -->
+	<update id="revModify" parameterType="hashmap">
+		update product_rev set revtitle=#{revtitle} , revcont=#{revcont} where revcode=#{revcode}
+	</update>
+<!-- 	리뷰삭제 -->
+    <delete id="revDelete" parameterType="hashmap">
+    	delete from product_rev where revcode=#{revcode}
+    </delete>
+<!--     리뷰에 단 댓글 조회 -->
+    <select id="revCmtList" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.PRevCmtDto">
+<!--     	SELECT CMTCODE, CMTNAME, CMTCONT, CMTPWD, CMTDATE FROM REV_COMMENTS WHERE REVCODE=#{REVCODE} order by CMTCODE -->
+    	select cmtcode, cmtcont, cmtdate from rev_comments where revcode=#{revcode} order by cmtcode
+    </select>
+<!--     리뷰댓글 작성 -->
+    <insert id="revCmtWrite" parameterType="hashmap">
+<!-- 	    INSERT INTO REV_COMMENTS(REVCODE, CMTCODE, CMTNAME, CMTPWD, CMTCONT) -->
+<!-- 		VALUES(#{REVCODE}, REV_COMMENTS_SEQ.NEXTVAL, #{CMTNAME}, #{CMTPWD}, #{CMTCONT}) -->
+	    insert into rev_comments(revcode, cmtcode, cmtcont)
+		values(#{revcode}, rev_comments_seq.nextval, #{cmtcont})
+    </insert>
+<!-- 	리뷰댓글 수정(원글보기)23.06.23 -> 댓글 수정 눌렀을때 원래 작성했던 내용 -->
+<!--     <select id="revCmtModifyView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.PRevCmtDto"> -->
+<!--     	select revcode, cmtcode, cmtcont from rev_comments where cmtcode=#{cmtcode} -->
+<!--     </select> -->
+<!-- 	리뷰 댓글 수정 -->
+	<update id="revCmtModify" parameterType="hashmap">
+		update rev_comments set cmtcont=#{cmtcont} where cmtcode=#{cmtcode}
+	</update>
+<!-- 	리뷰 댓글 삭제 -->
+	<delete id="revCmtDelete" parameterType="hashmap">
+    	delete from rev_comments where cmtcode=#{cmtcode}
+    </delete>
+<!-- =========================================================================================== -->
+<!-- 	문의목록 -->
+    <select id="PQnaList" resultType="com.lgy.ShoppingMall.dto.Gu_PQnaDto">
+<!--     	select qnacode, procode, qnatitle, qnadate, qnaauth from product_qna order by qnacode desc -->
+    	select qnacode, procode, qnatitle, qnadate, id from product_qna order by qnacode desc
+    </select>
+<!--     문의작성[상품코드는 나중에 수정] -->
+    <insert id="PQnaWrite" parameterType="hashmap">
+<!-- 		insert into product_qna(qnacode, procode, qnatitle, qnacont, qnadate, qnaauth)  -->
+<!-- 		values (product_qna_seq.nextval, #{procode}, #{qnatitle}, #{qnacont}, SYSDATE, #{qnaauth}) -->
+		insert into product_qna(qnacode, procode, qnatitle, qnacont, qnadate, id) 
+		values (product_qna_seq.nextval, #{procode}, #{qnatitle}, #{qnacont}, SYSDATE, #{id})
+	</insert>
+<!--     문의내용 조회 -->
+    <select id="PQnaContentView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.Gu_PQnaDto">
+<!--     	select qnacode, procode, qnatitle, qnacont, qnadate, qnaauth from product_qna where qnacode=#{qnacode} -->
+    	select qnacode, procode, qnatitle, qnacont, qnadate, id from product_qna where qnacode=#{qnacode}
+    </select>
+<!--     문의수정(원본조회)23.06.23 -->
+<!--     <select id="PQnaModifyView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.Gu_PQnaDto"> -->
+<!--     	select qnacode, qnatitle, qnacont from product_qna where qnacode=#{qnacode} -->
+<!--     </select> -->
+<!--     문의수정 -->
+	<update id="PQnaModify" parameterType="hashmap">
+		update product_qna set qnatitle=#{qnatitle} , qnacont=#{qnacont} where qnacode=#{qnacode}
+	</update>
+<!-- 	문의삭제 -->
+    <delete id="PQnaDelete" parameterType="hashmap">
+    	delete from product_qna where qnacode=#{qnacode}
+    </delete>
+<!--   	문의에 단 댓글 조회 -->
+    <select id="PQnaCmtList" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.Gu_PQnaReDto">
+    	select recode, recont, redate from product_qna_re where qnacode=#{qnacode} order by recode
+    </select>
+<!--     문의댓글 작성 -->
+    <insert id="PQnaCmtWrite" parameterType="hashmap">
+	    insert into product_qna_re(recode, qnacode, recont, redate)
+		values(qna_re_seq.nextval, #{qnacode}, #{recont}, sysdate)
+    </insert>
+<!-- 	문의댓글 수정(원글보기)23.06.23 -> 댓글 수정 눌렀을때 원래 작성했던 내용 -->
+<!--     <select id="PQnaCmtModifyView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.Gu_PQnaReDto"> -->
+<!--     	select recode, qnacode, recont from product_qna_re where recode=#{recode} -->
+<!--     </select> -->
+<!-- 	문의 댓글 수정 -->
+	<update id="PQnaCmtModify" parameterType="hashmap">
+		update product_qna_re set recont=#{recont} where recode=#{recode}
+	</update>
+<!-- 	문의 댓글 삭제 -->
+	<delete id="PQnaCmtDelete" parameterType="hashmap">
+    	delete from product_qna_re where recode=#{recode}
+    </delete>
+<!-- 장바구니.xml==================================================================================== -->
+<!-- 	장바구니 목록 -->
+    <select id="cartList" resultType="com.lgy.ShoppingMall.dto.Gu_CartDto">
+<!--     <select id="cartList" parameterMap="cart" resultMap="cart"> -->
+		select c.cartcode,
+				p.prothumb,
+				p.proname,
+				c.color,
+				c.psize,
+				p.proprice,
+				p.prosale,
+				c.amount
+		from cart c join product p
+			on c.procode = p.procode
+			and ispaid = 0
+		order by c.cartcode
+    </select>
+<!-- 	장바구니 추가 -->
+	<insert id="cartAdd" parameterType="hashmap">
+<!-- 		<selectKey keyProperty="cartcode" resultType="string" order="BEFORE"> -->
+<!-- 	    	select to_char(sysdate, 'yyyymmdd') || lpad(cart_seq.nextval, 4, '0') as cartcode from dual -->
+<!-- 	  	</selectKey> -->
+		<selectKey keyProperty="cartcode" resultType="string" order="BEFORE">
+			select to_char(sysdate, 'yyyymmdd') || lpad(cart_seq.nextval, 4, '0') || '/' || #{userid} || '/' || #{procode} || '/' || #{color} || '/' || #{psize} as cartcode from dual
+		</selectKey>
+<!-- 		insert into cart (cartcode, userid, procode, amount, ischecked, ispaid) -->
+<!-- 		values (#{cartcode}, #{userid}, #{procode}, #{amount}, #{ischecked}, #{ispaid}) -->
+		insert into cart (cartcode, userid, procode, amount, color, psize)
+		values (#{cartcode}, #{userid}, #{procode}, #{amount}, #{color}, #{psize})
+	</insert>
+<!-- 	장바구니 삭제 -->
+<!-- 	<delete id="cartDelete" parameterType="hashmap"> -->
+	<delete id="cartDelete">
+<!-- 		delete from cart where cartcode=#{cartcode} and userid=#{userid} -->
+		delete from cart where cartcode=#{cartcode}
+	</delete>
+<!-- 	장바구니 수량 수정 -->
+	<update id="cartModifyAmount" parameterType="hashmap">
+		update cart set amount=#{amount} where cartcode=#{cartcode}
+	</update>
+<!-- 	장바구니 확인 -->
+	<select id="cartCheck" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.Gu_CartDto">
+		select userid, procode, amount, color, psize from cart where userid=#{userid} and procode=#{procode} and ispaid = 0
+    </select>
+
+<!-- 상품상세조회 -->
+	<select id="ProductView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.CoProductDto">
+		select procode, catecode, proname, proprice, prosale, proinfo, proimg from product where procode = #{procode}
+	</select>
+	<select id="productColor" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.CoProductDto">
+		select color1, color2, color3 from product_op_color where procode = #{procode} 
+	</select>
+	<select id="productSize" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.CoProductDto">
+		select size1, size2, size3 from product_op_size where procode = #{procode}
+	</select>
+	
+<!-- 	페이징 -->
+<!--     게시글 총 갯수 조회 -->
+    <select id="getTotalCount" resultType="int">
+	    select count(*) from mvc_board
+    </select>
+<!-- 	리뷰게시판 리스트 페이징     -->
+     <select id="revListPaging" resultType="com.lgy.ShoppingMall.dto.PRevDto">
+		<![CDATA[
+			select revcode, revtitle, revdate, revhit
+			  from( select rownum rn, revcode, revtitle, revdate, revhit
+							from mvc_board
+			        		where rownum <= (#{pageNum} * #{amount})
+			        		order by bid desc
+			)
+			where rn > (#{pageNum} - 1) * #{amount}
+			order by revcode desc
+		]]>
+    </select>
+</mapper>

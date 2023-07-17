@@ -1,0 +1,80 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lgy.ShoppingMall.dao.PProductDao">
+<!-- 	상품 상세페이지 테스트용    -->
+<!--     <select id="productSelect" resultType="com.lgy.ShoppingMall.dto.ProductDto"> -->
+    <select id="productSelect" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.PProductDto">
+       select procode, catecode, proname, proprice, prosale, proinfo, proyn, proqty, prothumb, proimg from product where procode=#{procode}
+    </select>
+    
+<!--     주문시 주문 정보 저장 / 회원 아이디 세션으로 받아와야해서 임시적으로 넣음 -->
+    <insert id="productOrd" parameterType="hashmap">
+    	INSERT INTO product_ord(ordercode, userid, name, postcode, addr, etcaddr, hp, memo, totalprice, changedate, cartcode) VALUES(#{ordercode},#{userid},#{name},#{postcode},#{addr},#{etcaddr},#{hp},#{memo},#{totalprice},sysdate,#{cartcode})
+    </insert>
+<!--     결제 내용 저장 -->
+    <insert id="pay" parameterType="hashmap">
+    	insert into pay(paycode, ordercode, payprice, payment, ispaid) values(#{paycode},#{ordercode},#{payprice},#{payment},#{ispaid})
+    </insert>
+<!--     출고 정보 저장 -->
+    <insert id="productOut" parameterType="hashmap">
+    	insert into product_out(pocode, ordercode, procode, amount, status, cartcode) values(#{pocode},#{ordercode},#{procode},#{amount},#{status},#{cartcode})
+    </insert>
+<!--     장바구니 담기 -->
+    <insert id="addCart" parameterType="hashmap">
+      	<selectKey keyProperty="cartcode" resultType="java.lang.String" order="BEFORE">
+		 	select to_char(sysdate, 'yyyymmdd') || lpad(cart_seq.nextval, 4, '0') as cartcode from dual
+		</selectKey>
+		insert into cart (cartcode, userid, procode) values (#{cartcode}, #{userid}, #{procode})
+    </insert>
+    <select id="checkCart" resultType="com.lgy.ShoppingMall.dto.CheckCartDto" parameterType="hashmap">
+		select cartcode, procode from cart where userid = #{userid}
+    </select>
+    
+    <select id="CartView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.PProductDto">
+       select * from product where procode in (select procode from cart where userid = #{userid})
+    </select>
+    
+    <select id="memberAddr" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.MemberDto">
+       select name, pcode, hp, loadaddr, etcaddr from member where id = #{id}
+    </select>
+<!--     장바구니번호 확인 -->
+    <select id="checkCartCode" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.CheckCartDto">
+       select cartcode from cart where userid = #{userid} and procode = #{procode} and ispaid = 0 and color = #{color} and psize = #{psize}
+    </select>
+<!--     상품 불러오기 -->
+    <select id="selectFromCart" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.Gu_CartDto">
+<!--     <select id="cartList" parameterMap="cart" resultMap="cart"> -->
+		select c.cartcode,
+				p.prothumb,
+				p.proname,
+				c.color,
+				c.psize,
+				p.proprice,
+				p.prosale,
+				c.amount
+		from cart c join product p
+			on c.procode = p.procode
+            and c.procode = #{procode}
+            and ispaid = 0
+    </select>
+<!--    상품수량 업데이트 -->
+    <update id="proqtyUpdate" parameterType="hashmap">
+		update product set proqty = (proqty - CAST(#{proqty} AS int)) where procode = #{procode}
+	</update>
+<!--     장바구니 상태 업데이트 -->
+     <update id="cartUpdate" parameterType="hashmap">
+		update cart set ispaid = (#{ispaid}) where cartcode = #{cartcode}
+	</update>
+	 <select id="caCheck" resultType="com.lgy.ShoppingMall.dto.CheckCartDto">
+       select cartcode from cart where userid = #{userid} and procode = #{procode} and color = #{color} and psize = #{psize}
+    </select>
+    <!--     주문상세 --> 
+<!--      <select id="orderView" resultType="com.lgy.ShoppingMall.dto.OrderDto"> -->
+
+<!--     </select> -->
+<!--     출고 상세 --> 
+<!--     <select id="outView" resultType="com.lgy.ShoppingMall.dto.ProductOutDto"> -->
+<!--     </select> -->
+</mapper>

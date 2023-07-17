@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.lgy.ShoppingMall.dao.AProductDao">
+
+	<!-- 상품 목록 -->	
+	<select id="productList" resultType="com.lgy.ShoppingMall.dto.AProductDto">
+<!-- 	    <![CDATA[ -->
+<!-- 	        select proCode, cateCode, proName, proPrice, proSale, proInfo, proYN, proQty, proThumb, proImg, count -->
+<!-- 	        from ( -->
+<!-- 	        	select proCode, cateCode, proName, proPrice, proSale, proInfo, proYN, proQty, proThumb, proImg, -->
+<!-- 	        		(select count(*) from notice) as count, -->
+<!-- 	        		ROWNUM rn -->
+<!-- 	        	from PRODUCT -->
+<!-- 	        	where ROWNUM <= (#{pageNum} * #{amount}) -->
+<!-- 	        )  -->
+<!-- 	        WHERE rn > (#{pageNum}-1) * #{amount} -->
+<!-- 	        order by proCode desc -->
+<!-- 	   	]]> -->
+		<![CDATA[
+			SELECT p.proCode, p.cateCode, p.proName, p.proPrice, p.proSale, p.proInfo, p.proYN, p.proQty, p.proImg, (
+			SELECT COUNT(*) FROM PRODUCT
+		) AS count, poc.COLOR1, poc.COLOR2, poc.COLOR3, pos.SIZE1, pos.SIZE2, pos.SIZE3
+		FROM (
+			SELECT p.proCode, p.cateCode, p.proName, p.proPrice, p.proSale, p.proInfo, p.proYN, p.proQty, p.proImg, 
+		    ROWNUM rn
+			FROM PRODUCT p
+		    where ROWNUM <= (#{pageNum} * #{amount})
+		    ORDER BY p.proCode DESC
+		) p
+			JOIN PRODUCT_OP_COLOR poc ON p.proCode = poc.proCode
+			JOIN PRODUCT_OP_SIZE pos ON p.proCode = pos.proCode
+			WHERE p.rn > (#{pageNum}-1) * #{amount} 
+			ORDER BY p.proCode DESC
+		]]>
+	</select>
+
+	<!-- 상품 등록 --> 
+	<insert id="register" parameterType="hashmap">   		 		
+		  insert into product (proCode, cateCode,proName,proPrice, proSale,proInfo, proQty, proThumb, proImg)
+ 			   values (PRODUCT_SEQ.NEXTVAL, #{cateCode}, #{proName}, #{proPrice}, #{proSale},
+            #{proInfo, jdbcType=VARCHAR}, #{proQty}, #{proThumb}, #{proImg})
+	</insert>
+	
+	<insert id="productOpColorRegister" parameterType="hashmap">   		 		
+		  insert into PRODUCT_OP_COLOR (proCode, color1, color2, color3)
+ 			   values (#{proCode}, #{color1}, #{color2}, #{color3})
+	</insert>
+	
+	<insert id="productOpSizeRegister" parameterType="hashmap">   		 		
+		  insert into PRODUCT_OP_SIZE (proCode, size1, size2, size3)
+ 			   values (#{proCode}, #{size1}, #{size2}, #{size3})
+	</insert>
+	
+<!-- 	마지막 proCode 꺼내옴 -->
+	<select id="lastProCode" resultType="String">
+		SELECT procode
+			FROM (
+			  SELECT procode
+			  FROM product
+			  ORDER BY procode DESC
+			)
+			WHERE ROWNUM = 1
+	</select>
+	
+	<!-- 상품 조회 -->
+	<select id="productView" resultType="com.lgy.ShoppingMall.dto.AProductDto" parameterType="hashmap">
+<!-- 	select proCode, cateCode, proName, proPrice, proSale, proInfo, proYN, -->
+<!-- 		proQty, proThumb,proImg  from product where proCode = #{proCode} -->
+	SELECT p.proCode, p.cateCode, p.proName, p.proPrice, p.proSale, p.proInfo, p.proYN, p.proQty, p.proThumb, p.proImg,
+	       poc.COLOR1, poc.COLOR2, poc.COLOR3,
+	       pos.SIZE1, pos.SIZE2, pos.SIZE3
+	FROM PRODUCT p
+	LEFT JOIN PRODUCT_OP_COLOR poc ON p.proCode = poc.proCode
+	LEFT JOIN PRODUCT_OP_SIZE pos ON p.proCode = pos.proCode
+	WHERE p.proCode = #{proCode}
+	</select>
+	
+	<!-- 상품 수정 -->
+	<update id="productModify" parameterType="hashmap">
+		update PRODUCT
+		    set
+		    	proCode = #{proCode},
+		        cateCode = #{cateCode},
+		        proName = #{proName},
+		        proPrice = #{proPrice}, 
+				proSale = #{proSale},	    	
+		        proInfo = #{proInfo},
+		        proQty = #{proQty},
+		        proThumb = #{proThumb},
+		        proImg = #{proImg}
+		        
+		    where proCode = #{proCode}
+	</update>
+
+	<update id="productOpColorModify" parameterType="hashmap">
+		update PRODUCT_OP_COLOR
+		    set
+		    	proCode = #{proCode},
+		        color1 = #{color1},
+		        color2 = #{color2},
+		        color3 = #{color3}
+		    where proCode = #{proCode}
+	</update>
+
+	<update id="productOpSizeModify" parameterType="hashmap">
+		update PRODUCT_OP_SIZE
+		    set
+		    	proCode = #{proCode},
+		        size1 = #{size1},
+		        size2 = #{size2},
+		        size3 = #{size3}
+		    where proCode = #{proCode}
+	</update>
+	
+	<!-- 상품 삭제 -->
+	<delete id="productDelete" parameterType="hashmap">
+		delete from PRODUCT where proCode = #{proCode}
+	</delete>
+</mapper>

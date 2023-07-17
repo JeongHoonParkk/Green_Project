@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lgy.ShoppingMall.dao.NoticeDao">
+
+    <!-- 글 목록을 가져오는 쿼리 -->
+    <select resultType="com.lgy.ShoppingMall.dto.NoticeDto" id="list">
+    	<![CDATA[
+	        select noticode, notiauth, notititle, noticont, notidate, count
+	        from (
+	        	select noticode, notiauth, notititle, noticont, notidate,
+	        		(select count(*) from notice) as count,
+	        		ROWNUM rn
+	        	from notice
+	        	where ROWNUM <= (#{pageNum} * #{amount})
+	        ) 
+	        WHERE rn > (#{pageNum}-1) * #{amount}
+	        order by noticode desc
+	   	]]>
+    </select>
+
+    <!-- 글을 작성하는 쿼리 -->
+    <insert id="write" parameterType="hashmap">
+	INSERT INTO notice(noticode, notiauth, notititle, noticont, notidate)
+    VALUES (notice_SEQ.NEXTVAL, #{notiauth, jdbcType=VARCHAR}, #{notititle, jdbcType=VARCHAR}, #{noticont, jdbcType=VARCHAR}, SYSDATE)
+<!-- 	INSERT INTO notice(noticode, notiauth, notititle, noticont, notidate) -->
+<!--     VALUES (notice_SEQ.NEXTVAL, #{notiauth}, #{notititle}, #{noticont}, SYSDATE) -->
+    </insert>
+
+    <!-- 글 내용을 조회하는 쿼리 -->
+    <select resultType="com.lgy.ShoppingMall.dto.NoticeDto" id="contentView" parameterType="hashmap">
+		 select noticode, notiauth, notititle, noticont, notidate from notice where noticode = #{noticode}
+    </select>
+
+    <!-- 글을 수정하는 쿼리 -->
+    <update id="noticeModify" parameterType="hashmap">
+<!-- 		update notice set notiauth = #{notiauth}, notititle = #{notititle}, noticont = #{noticont} -->
+<!-- 		 where noticode = #{noticode} -->
+	  UPDATE notice SET notiauth = #{notiauth, jdbcType=VARCHAR}, notititle = #{notititle, jdbcType=VARCHAR}, noticont = #{noticont, jdbcType=VARCHAR}
+    	WHERE noticode = #{noticode, jdbcType=INTEGER}
+    </update>
+
+    <!-- 글을 삭제하는 쿼리 -->
+    <delete id="noticeDelete" parameterType="hashmap">
+		delete from notice where noticode = #{noticode}
+    </delete>
+
+</mapper>

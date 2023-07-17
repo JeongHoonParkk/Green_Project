@@ -1,0 +1,36 @@
+<!-- ======================================================== 
+ProudctDao.xml
+각 로직이 사용할 sql
+  개발자   |   수정자   |    개발 및 수정 일자    |    수정 내용
+  박동명       박동명           23-06-19           select 요소 추가
+===========================================================-->
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lgy.ShoppingMall.dao.ProductDao">
+
+<!--     <select id="list" resultType="com.lgy.ShoppingMall.dto.ProductDto"> -->
+    <select id="ProductList" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.ProductDto">
+        select procode, catecode, proname, proprice, prosale, proinfo, proyn, proqty, prothumb, proimg from product where catecode=#{catecode}
+    </select>
+    
+    <select id="ProductView" parameterType="hashmap" resultType="com.lgy.ShoppingMall.dto.ProductDto">
+        select procode, catecode, proname, proprice, prosale, proinfo, proyn, proqty, prothumb, proimg from product where procode=#{procode}
+    </select>
+    
+</mapper>
+
+
+
+<!-- 	private String procode; -->
+<!-- 	private String catecode; -->
+<!-- 	private String proname; -->
+<!-- 	private String proprice; -->
+<!-- 	private String proinfo; -->
+<!-- //	private String prothumb; -->
+<!-- //	private String proimg; -->
+
+
+
+
